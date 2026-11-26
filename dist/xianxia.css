@@ -1,7 +1,7 @@
 @font-face { font-family: "Brush"; src: url("assets/414769b52f8c.woff") format("woff"); }
 @font-face { font-family: "Serif"; src: url("assets/493adb11bc3a.woff") format("woff"); font-weight: 200 900; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 390px; height: 844px; overflow: hidden; background: #888; }
+html.xx-preview, html.xx-preview body { width: 390px; height: 844px; overflow: hidden; background: #888; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 .screen { position: relative; width: 390px; height: 844px; overflow: hidden; }
 .brush { font-family: "Brush", serif; font-weight: 400; }
@@ -40,7 +40,7 @@ svg { display: block; width: 100%; height: 100%; }
 
 
 
-html, body, .screen { height: 633px !important; }
+html.xx-preview, html.xx-preview body, .screen { height: 633px !important; }
 
 
 .v .seal { display: inline-grid; place-items: center; width: 20px; height: 20px; background: var(--zhu); color: #fff; text-shadow: none;
@@ -196,14 +196,19 @@ html, body, .screen { height: 633px !important; }
 
 
 
-html, body { width: 100% !important; height: 100% !important; margin: 0; overflow: hidden; background: #101417 !important; }
-body { display: grid; place-items: center; }
+html.xx-preview, html.xx-preview body { width: 100% !important; height: 100% !important; margin: 0; overflow: hidden; background: #101417 !important; }
+html.xx-preview body { display: grid; place-items: center; }
 .stage { position: relative; width: calc(390px * var(--s, 1)); height: calc(844px * var(--s, 1)); }
 .stage > .phone { position: absolute; left: 0; top: 0; width: 390px; height: 844px; overflow: hidden; transform-origin: 0 0; transform: scale(var(--s, 1));
   background: #eceeef; font-family: -apple-system, "PingFang SC", "Noto Sans CJK SC", "Noto Sans CJK TC", sans-serif; }
 .phone > .screen { position: absolute !important; left: 0; top: 48px; z-index: 5;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 .phone > .screen.folded { display: none !important; }
+
+[data-huohu-floating] > .screen { position: absolute !important; left: calc(50% - 195px * var(--s, 1)); top: 0; z-index: 5; transform-origin: 0 0; transform: scale(var(--s, 1));
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+[data-huohu-floating] > .screen.folded { display: none !important; }
+[data-huohu-floating] > .mini { left: calc(50% - 70px); top: 12px; }
 
 .app-top { position: absolute; left: 0; right: 0; top: 0; height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
   background: #fbfbfb; border-bottom: 1px solid #e2e4e6; color: #2a2d30; font-size: 16px; }
@@ -493,7 +498,7 @@ body { display: grid; place-items: center; }
 
 
 .v .ui { position: absolute; inset: 0; }
-.phone > .screen.bleed { -webkit-mask-image: url("assets/d0353016fda1.webp"); mask-image: url("assets/d0353016fda1.webp"); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+[data-huohu-floating] > .screen.bleed, .phone > .screen.bleed { -webkit-mask-image: url("assets/d0353016fda1.webp"); mask-image: url("assets/d0353016fda1.webp"); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
 .v .rim { position: absolute; left: 0; top: 0; width: 1950px; height: 1950px; z-index: 40; pointer-events: none;
   opacity: 0; scale: 0; background: url("assets/2783a06f1c1e.webp") center / 100% 100% no-repeat; }
 @keyframes fx-btn { 0% { opacity: 0; scale: .7; filter: blur(4px) } 60% { opacity: 1; scale: 1.06; filter: blur(0px) } 100% { opacity: 1; scale: 1; filter: blur(0px) } }

@@ -821,6 +821,13 @@ window.BGM = (() => {
   const stoneHTML = (n, max) => stoneParts(n).slice(0, max || 3).map(([k, v]) => `<span class="sg sg-${k}">${STONE_ICON[k]}<b>${v}</b></span>`).join('');
   const stoneSay = n => stoneParts(n).map(([k, v]) => STONE_NAME[k] + ' ' + v).join('、');
   const stage = document.querySelector('.stage');
+  // 平台上（入口里 data-huohu-floating 就是挂载点）：悬浮窗、小组件是它下面两个并列的直接子元素，不放在示意手机里
+  const xxRoot = document.querySelector('[data-xx-mount]'), PLATFORM = !!(xxRoot && xxRoot.hasAttribute('data-huohu-floating'));
+  // 写进聊天输入框：平台上用 huohu.insertInput（只填不发）；样张里写那个示意输入框
+  function xxInsert(t) {
+    if (window.huohu && huohu.insertInput) { huohu.insertInput(t); return; }
+    const inp = document.querySelector('.app-input span'); if (inp) { inp.textContent = t; inp.parentNode.classList.add('filled'); }
+  }
   const screen = document.querySelector('.screen');
   const fig = screen.querySelector('.fig'), figLabel = fig.querySelector('.ph-label');
   const veil = screen.querySelector('.veil'), toast = screen.querySelector('.toast'), charname = screen.querySelector('.charname');
@@ -832,8 +839,16 @@ window.BGM = (() => {
   let s = 1, busy = true, ci = START_CI;
 
   // 舞台缩放：整屏放进窗口
-  const fit = () => { s = Math.max(.4, Math.min(innerWidth / 390, innerHeight / 844, 1.6)); stage.style.setProperty('--s', s); };
+  // 平台：悬浮窗贴着聊天区顶上居中，宽、高放不下就整体缩小（不放大）；缩放量写在悬浮窗和小组件自己身上，不给 data-huohu-floating 写样式
+  const fit = () => {
+    if (PLATFORM) {
+      const r = xxRoot.getBoundingClientRect();
+      s = Math.max(.5, Math.min(1, (r.width || innerWidth) / 390, (r.height || innerHeight) / 633));
+      screen.style.setProperty('--s', s);
+    } else { s = Math.max(.4, Math.min(innerWidth / 390, innerHeight / 844, 1.6)); stage.style.setProperty('--s', s); }
+  };
   addEventListener('resize', fit); fit();
+  if (PLATFORM && window.ResizeObserver) new ResizeObserver(fit).observe(xxRoot);
 
 
   // ---------- 小动静：全用 Web Audio 现场合成，不用音频文件、没有授权问题 ----------
@@ -994,6 +1009,7 @@ window.BGM = (() => {
   const ui = screen.querySelector('.ui'), qian = screen.querySelector('button.qian');
   const rim = screen.querySelector('.rim'), mini = document.querySelector('.mini'), phone = document.querySelector('.phone');
   const miniOpen = mini.querySelector('.mo');
+  if (PLATFORM) mini.setAttribute('data-huohu-draggable', '');
   const TOP = 48, SMAX = 1950, CORE = .33;
   const EASE_IN_INK = [.12, .72, .28, 1], EASE_OUT_INK = [.42, 0, .78, .45];
   const easeA = bez(...EASE_IN_INK), cssIn = `cubic-bezier(${EASE_IN_INK})`, cssOut = `cubic-bezier(${EASE_OUT_INK})`;
@@ -1011,10 +1027,12 @@ window.BGM = (() => {
   const inv = (fn, y) => { let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (fn(m) < y) lo = m; else hi = m; } return (lo + hi) / 2; };
   // 小组件中心，换算成悬浮窗里的坐标（悬浮窗藏起来时也能算）
   function miniCenter() {
-    const pr = phone.getBoundingClientRect(), r = mini.getBoundingClientRect();
     const show = mini.hidden; if (show) { mini.hidden = false; }
     const rr = mini.getBoundingClientRect(); if (show) mini.hidden = true;
-    return [(rr.left + rr.width / 2 - pr.left) / s, (rr.top + rr.height / 2 - pr.top) / s - TOP];
+    let ox, oy;                                          // 悬浮窗左上角（藏起来时也能算）
+    if (PLATFORM) { const R = xxRoot.getBoundingClientRect(); ox = R.left + (R.width - 390 * s) / 2; oy = R.top; }
+    else { const pr = phone.getBoundingClientRect(); ox = pr.left; oy = pr.top + TOP * s; }
+    return [(rr.left + rr.width / 2 - ox) / s, (rr.top + rr.height / 2 - oy) / s];
   }
   const mk = (S, cx, cy) => ({ webkitMaskSize: `${S}px ${S}px`, maskSize: `${S}px ${S}px`,
                                webkitMaskPosition: `${cx - S / 2}px ${cy - S / 2}px`, maskPosition: `${cx - S / 2}px ${cy - S / 2}px` });
@@ -1088,6 +1106,7 @@ window.BGM = (() => {
     const dx = (e.clientX - md.x) / s, dy = (e.clientY - md.y) / s;
     if (!md.moved && Math.hypot(dx, dy) < 6) return;
     md.moved = true;
+    if (PLATFORM) return;                                // 平台上拖动交给 data-huohu-draggable，这里只分辨是点还是拖
     mini.style.left = Math.max(6, Math.min(390 - mini.offsetWidth - 6, md.l + dx)) + 'px';
     mini.style.top = Math.max(TOP + 6, Math.min(844 - 56 - mini.offsetHeight - 6, md.t + dy)) + 'px';
   });
@@ -1497,9 +1516,9 @@ window.BGM = (() => {
       if (q.cur) { q.cur = false; const nx = QUESTS.find(x => x.state === 'taken'); if (nx) nx.cur = true; }
       qT = setTimeout(closeQuest, reduce ? 300 : 1100);
       return;
-    } else if (kind === 'go') {                    // 去做：把这件事写进聊天输入框（正式版用 huohu.insertInput），发不发由人定
-      const st = qStep(q), inp = document.querySelector('.app-input span');
-      inp.textContent = `（去${q.where}办「${q.title}」${st ? '：' + st[0] : ''}）`; inp.parentNode.classList.add('filled');
+    } else if (kind === 'go') {                    // 去做：把这件事写进聊天输入框（xxInsert：平台上是 huohu.insertInput），发不发由人定
+      const st = qStep(q);
+      xxInsert(`（去${q.where}办「${q.title}」${st ? '：' + st[0] : ''}）`);
       showToast('已写进输入框，改好再发', btn, 'up');
       return;
     }
@@ -1686,8 +1705,7 @@ window.BGM = (() => {
   }
   function xnAct(a) {                              // 放下、取用都只写进输入框：包里有什么由会话变量定，主模型下一轮更新
     const it = xnSel; if (!it || (a !== 'drop' && a !== 'use')) return;
-    const inp = document.querySelector('.app-input span');
-    inp.textContent = `（${a === 'drop' ? '放下' : '取出'}${it.name}）`; inp.parentNode.classList.add('filled');
+    xxInsert(`（${a === 'drop' ? '放下' : '取出'}${it.name}）`);
     showToast('已写进输入框，改好再发', xnDa.querySelector(`[data-xa="${a}"]`), 'up');
   }
   xnPage.addEventListener('keydown', e => {
@@ -1968,8 +1986,7 @@ window.BGM = (() => {
     }
   });
   function cyFill(t) {
-    if (window.huohu && huohu.insertInput) huohu.insertInput(t);
-    else { const inp = document.querySelector('.app-input span'); inp.textContent = t; inp.parentNode.classList.add('filled'); }   // 样张：示意输入框
+    xxInsert(t);
   }
   // ---- 随主线：她们不当场回。传出去的话（每个会话从 c.out 起、还没交给主线的）照录成「（传音·某人｜时辰）你：「…」」，
   //      几个会话一起填进输入框（每传一句都整段重填，前面传的不会被盖掉）。主线下一轮的会话变量到了，就算交出去了；她的回信从 inbox 来。
@@ -2322,7 +2339,7 @@ window.BGM = (() => {
   });
   bzPage.querySelector('.bz-cdt').addEventListener('click', e => {      // 卸下：只写进输入框，身上穿什么由会话变量定
     const b = e.target.closest('button.off'), it = bzCdSel && (BZ.chuandai || {})[bzCdSel]; if (!b || !it) return;
-    const inp = document.querySelector('.app-input span'); inp.textContent = `（卸下${it.name}）`; inp.parentNode.classList.add('filled');
+    xxInsert(`（卸下${it.name}）`);
     showToast('已写进输入框，改好再发', b, 'up');
   });
   function bzShow(t, focus) {                                           // 换页：身份、修为、穿戴（页签只换浓淡）
@@ -2346,6 +2363,29 @@ window.BGM = (() => {
   window.__bz = { BZ, fill: () => { bzFill(); bzFillXw(); bzFillCd(); }, get tab() { return bzTab; }, get cd() { return bzCdSel; }, get zp() { return bzZzP.n; },       // 测试用
     get xp() { return bzXwP.n; }, get xw() { return bzXwPages.map(p => p.map(e => e.classList.contains('bz-xg') ? '#' + e.textContent : (e.querySelector('.nm') || e).textContent)); } };
 
+  // ---------- 接会话变量（huohu.state 是只读的整份快照：每次来一份就整份照着改，不改它本身） ----------
+  // 字段写法见 传音-接主线.md：stones、disciples.<id>（门下两页）、self / zizhi / xiuwei / chuandai（本尊）、items（行囊）。
+  // time、各人的 inbox、group_inbox 传音自己接；huaben_jie / huaben_hui 话本自己接。快照里没有的栏照旧用样张的数据。
+  const xxCopy = v => v == null ? v : JSON.parse(JSON.stringify(v));
+  function xxApply(st) {
+    if (!st || typeof st !== 'object') return;
+    if (typeof st.stones === 'number') stoneSet(st.stones);
+    if (st.disciples) for (const d of MX) {
+      const v = st.disciples[d.id]; if (!v) continue;
+      for (const k of ['where', 'doing', 'inner', 'bond', 'favor', 'realm', 'dress', 'body', 'xiuwei']) if (v[k] !== undefined) d[k] = xxCopy(v[k]);
+    }
+    for (const k of ['self', 'zizhi', 'xiuwei', 'chuandai']) if (st[k] !== undefined) BZ[k] = xxCopy(st[k]);
+    if (Array.isArray(st.items)) { XN.splice(0, XN.length, ...xxCopy(st.items)); if (xnSel && !XN.some(i => i.id === xnSel.id)) xnSel = null; else if (xnSel) xnSel = XN.find(i => i.id === xnSel.id); }
+    if (curSub === mxPage) mxShow(mxI);                 // 开着的页跟着刷新
+    if (curSub === bzPage) { bzFill(); bzFillXw(); bzFillCd(); }
+    if (curSub === xnPage) xnRender();
+  }
+  if (window.huohu && huohu.subscribeState) {
+    if (huohu.stateReady) huohu.stateReady.then(() => xxApply(huohu.state));
+    const off = huohu.subscribeState(xxApply);
+    if (typeof off === 'function') addEventListener('pagehide', off);
+  }
+  window.__xx = { apply: xxApply, get platform() { return PLATFORM; }, get s() { return s; } };   // 测试用
   screen.addEventListener('click', e => {
     const qn = e.target.closest('button.qn');
     if (qn) return openQuest(qn);
