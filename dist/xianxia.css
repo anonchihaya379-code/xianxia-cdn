@@ -1,5 +1,5 @@
-@font-face { font-family: "Brush"; src: url("assets/414769b52f8c.woff") format("woff"); }
-@font-face { font-family: "Serif"; src: url("assets/493adb11bc3a.woff") format("woff"); font-weight: 200 900; }
+@font-face { font-family: "Brush"; src: url("assets/cca315830ec3.woff") format("woff"); }
+@font-face { font-family: "Serif"; src: url("assets/0c45163876d7.woff") format("woff"); font-weight: 200 900; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html.xx-preview, html.xx-preview body { width: 390px; height: 844px; overflow: hidden; background: #888; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
@@ -9,7 +9,7 @@ svg { display: block; width: 100%; height: 100%; }
 .dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #c0392b; }
 
 
-@font-face { font-family: "Kai"; src: url("assets/9bab0a538b00.woff") format("woff"); }
+@font-face { font-family: "Kai"; src: url("assets/19604af4732f.woff") format("woff"); }
 .v { --ink: #20282c; --ink2: #5d696e; --zhu: #c23f2c; --paper: #eef0ee;
      --soft: 0 1px 2px rgba(14,22,26,.34), 0 0 14px rgba(14,22,26,.22);
      --lift: 0 8px 22px rgba(20,34,42,.2), 0 1px 2px rgba(20,34,42,.12);

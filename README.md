@@ -10,5 +10,6 @@
 ## 许可
 
 - 字体子集：马善政（Ma Shan Zheng）、霞鹜文楷（LXGW WenKai）、思源宋体（Noto Serif SC），均为 SIL Open Font License 1.1，见 `OFL.txt`。
+- 任务提示末尾的小箭头取自 Phosphor Icons（caret-right，MIT），见 `Phosphor_LICENSE.txt`。
 - 水墨素材部分取自 shuimo-ui（MIT）；一幅泼墨取自 OpenGameArt（CC0）。
 - 三位角色的立绘由作者用即梦生成，用途以即梦的用户协议为准；其余图形为作者自绘或程序生成。未经许可请勿另作他用。

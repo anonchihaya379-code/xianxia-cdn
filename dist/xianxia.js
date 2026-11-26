@@ -940,11 +940,11 @@ window.BGM = (() => {
     Object.assign(veil.style, { left: x + 'px', top: y + 'px', width: size + 'px', height: size + 'px', background: color });
     veil.hidden = false;
     return play(veil, [{ transform: 'translate(-50%,-50%) scale(.04)' }, { transform: 'translate(-50%,-50%) scale(1)' }],
-                { duration: 640, easing: 'cubic-bezier(.55,.12,.55,1)' }).finished;
+                { duration: 340, easing: 'cubic-bezier(.55,.12,.55,1)' }).finished;
   }
   function veilOut() {
     return play(veil, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.12)' }],
-                { duration: 560, easing: 'ease-out' }).finished.then(() => { veil.hidden = true; veil.getAnimations().forEach(a => a.cancel()); });
+                { duration: 300, easing: 'ease-out' }).finished.then(() => { veil.hidden = true; veil.getAnimations().forEach(a => a.cancel()); });
   }
   async function openPage(name, from) {
     if (busy) return;
